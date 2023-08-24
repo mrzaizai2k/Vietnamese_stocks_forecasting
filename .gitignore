@@ -1,1 +1,7 @@
 env/
+*.pt 
+models/
+data/
+*.zip
+*.csv
+lightning_logs/
