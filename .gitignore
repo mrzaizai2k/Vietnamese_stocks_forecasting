@@ -5,3 +5,4 @@ data/
 *.zip
 *.csv
 lightning_logs/
+venv/
