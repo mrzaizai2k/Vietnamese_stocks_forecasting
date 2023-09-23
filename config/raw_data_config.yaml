@@ -1,0 +1,11 @@
+LOAD_DATA:
+  Historical_price:
+    [
+      'time', 
+      'open', 
+      'high', 
+      'low', 
+      'close', 
+      'volume', 
+      'ticker',
+      ]

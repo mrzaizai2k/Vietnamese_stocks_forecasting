@@ -1,3 +1,7 @@
+import sys
+sys.path.append('/root/code_Bao/Vietnamese_stocks_forecasting') 
+
+
 import time
 import pandas as pd
 from tqdm import tqdm
