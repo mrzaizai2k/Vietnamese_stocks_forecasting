@@ -6,3 +6,4 @@ data/
 *.csv
 lightning_logs/
 venv/
+*.pyc
