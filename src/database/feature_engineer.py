@@ -79,7 +79,7 @@ class PercentageChangeCalculator:
         Calculate percent changes for lagged columns.
         
         Args:
-            fill_method (str, optional): Method for filling missing values in percent change columns ('backfill', 'bfill', 'pad', 'ffill', or 'None'). Default is 'pad'.
+            fill_method (str, optional): Method for filling missing values in percent change columns ('bfill','constant', 'ffill', or None). Default is None.
         
         Returns:
             pd.DataFrame: The dataframe including percent change columns.
@@ -218,9 +218,10 @@ class DuplicateCheck:
     def remove_duplicate_rows(self):
         # First, check and print the number of duplicate rows
         self.check_duplicate_rows()
-        self.dataframe = self.dataframe.drop_duplicates()
+        new_df = self.dataframe.drop_duplicates()
 
         print("Duplicated rows has been removed!")
+        return new_df
 
 class TS_data_fill:
     def __init__(self, dataframe, fill_method=None, constant_value=None, limit=None)-> pd.DataFrame:
