@@ -18,7 +18,8 @@ class ConfigReader:
 
 class DataConfigReader:
     def __init__(self, data_config_path:str='config/raw_data_config.yaml', 
-                 dtype_config_path:str='config/data_type_dict.yaml', section:str='Historical_price'):
+                 dtype_config_path:str='config/data_type_dict.yaml', 
+                 section:str='Historical_price'):
         self.section = section
         self.data_config_path = data_config_path
         self.dtype_config_path = dtype_config_path
@@ -32,6 +33,10 @@ class DataConfigReader:
     def read_data_type(self):
         data_type = self.dtype_config.read_config(self.section)
         return data_type
+    
+    def read_data_purpose(self):
+        data_purpose = self.data_config.read_config('DATA_PURPOSE')[self.section]
+        return  data_purpose
 
 if __name__ == "__main__":
     data_config_reader = DataConfigReader()

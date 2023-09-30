@@ -31,7 +31,8 @@ class TimeEngine:
         self.date_col = date_col
         self.special_days = special_days
         self.new_cols = []
-
+    
+    @timeit
     def generate_time_features(self):
         """
         Engineer time-based features in the DataFrame.
@@ -74,6 +75,7 @@ class PercentageChangeCalculator:
         self.limit = limit
         self.new_cols = self.get_new_cols()
 
+    @timeit
     def calculate_pct_change(self):
         '''
         Calculate percent changes for lagged columns.
@@ -126,7 +128,7 @@ class LagEngine:
         self.limit = limit
         self.new_cols = self.get_new_cols()
 
-
+    @timeit
     def create_lag_features(self):
         '''
         Create lagged columns in the dataframe if lag_dict is provided.
@@ -169,7 +171,8 @@ class RollingMACalculator:
         self.constant_value = constant_value
         self.limit = limit
         self.new_cols = self.get_new_cols()
-
+        
+    @timeit
     def calculate_MA(self, fill_method='None') ->pd.DataFrame:
         """
         Calculate Moving Average for specified columns and window widths.

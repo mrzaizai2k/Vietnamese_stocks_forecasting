@@ -9,3 +9,22 @@ LOAD_DATA:
       'volume', 
       'ticker',
       ]
+
+DATA_PURPOSE:
+  Historical_price:
+    num_cols:
+      [
+      'open', 
+      'high', 
+      'low', 
+      'close', 
+      'volume', 
+      ]
+    cat_cols:
+      [
+        'ticker',
+      ]
+    date_cols:
+      [
+        'time',
+      ]
