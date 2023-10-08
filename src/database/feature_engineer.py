@@ -3,7 +3,9 @@ sys.path.append('/root/code_Bao/Vietnamese_stocks_forecasting')
 
 import pandas as pd
 import numpy as np
+from typing import Literal
 
+from src.database.ts_fill_data import TSDataFill
 from src.utils.decorators import timeit, tqdm_decor
 
 
@@ -61,8 +63,9 @@ class TimeEngine:
 
 
 class PercentageChangeCalculator:
-    def __init__(self, dataframe, pct_cols:list, date_col:str, group_id:str = "ticker",
-                 fill_method=None, constant_value=None, limit=None):
+    def __init__(self, dataframe, pct_cols:list, 
+                 date_col:str = 'time', group_id:str = "ticker",
+                 fill_method=None):
         '''
         Initialize the PercentageChangeCalculator with a DataFrame, columns to calculate percentage change for, date column, and group_id.
         '''
@@ -71,8 +74,6 @@ class PercentageChangeCalculator:
         self.date_col = date_col
         self.group_id = group_id
         self.fill_method = fill_method
-        self.constant_value = constant_value
-        self.limit = limit
         self.new_cols = self.get_new_cols()
 
     @timeit
@@ -94,8 +95,7 @@ class PercentageChangeCalculator:
             new_df[pct_col_name].replace([np.inf, -np.inf], np.nan, inplace=True)
         
             if self.fill_method is not None:
-                fill_generator = TS_data_fill(new_df.groupby([self.group_id])[pct_col_name], fill_method=self.fill_method, 
-                                              constant_value=self.constant_value, limit = self.limit)
+                fill_generator = TSDataFill(new_df.groupby([self.group_id])[pct_col_name], fill_method=self.fill_method)
                 new_df[pct_col_name] = fill_generator.fill()
         return new_df
 
@@ -108,8 +108,9 @@ class PercentageChangeCalculator:
 
 
 class LagEngine:
-    def __init__(self, dataframe, lag_dict=None, group_id='ticker', time_column='time_idx',
-                 fill_method=None, constant_value=None, limit=None):
+    def __init__(self, dataframe, lag_dict=None, 
+                 group_id='ticker', time_column='time',
+                 fill_method=None):
         '''
         Initialize LagEngine with a dataframe and optional lag parameters.
         
@@ -124,8 +125,6 @@ class LagEngine:
         self.group_id = group_id
         self.time_column = time_column
         self.fill_method = fill_method
-        self.constant_value = constant_value
-        self.limit = limit
         self.new_cols = self.get_new_cols()
 
     @timeit
@@ -144,11 +143,10 @@ class LagEngine:
                     result_df[new_col_name] = result_df.sort_values(self.time_column).groupby(self.group_id, observed=True)[col].shift(periods=lag, fill_value=None)
         
                     if self.fill_method is not None:
-                        fill_generator = TS_data_fill(dataframe=result_df[new_col_name], fill_method=self.fill_method, 
-                                                    constant_value=self.constant_value, limit=self.limit)
+                        fill_generator = TSDataFill(dataframe=result_df[new_col_name], fill_method=self.fill_method)
                         result_df[new_col_name] = fill_generator.fill()
 
-        return self.dataframe
+        return result_df
     
     def get_new_cols(self)-> list:
         new_cols =[]
@@ -161,19 +159,18 @@ class LagEngine:
 
 
 class RollingMACalculator:
-    def __init__(self, dataframe, MA_cols, window_widths, group_id='ticker',
-                 fill_method=None, constant_value=None, limit=None):
+    def __init__(self, dataframe, MA_cols:list, 
+                 window_widths:list = [10], group_id='ticker',
+                 fill_method=None):
         self.dataframe = dataframe
         self.MA_cols = MA_cols
         self.window_widths = window_widths
         self.group_id = group_id
         self.fill_method = fill_method
-        self.constant_value = constant_value
-        self.limit = limit
         self.new_cols = self.get_new_cols()
         
     @timeit
-    def calculate_MA(self, fill_method='None') ->pd.DataFrame:
+    def calculate_MA(self) ->pd.DataFrame:
         """
         Calculate Moving Average for specified columns and window widths.
 
@@ -183,19 +180,22 @@ class RollingMACalculator:
         # Create a copy of the original DataFrame to avoid modifying it
         result_df = self.dataframe.copy()
 
+        result_df.set_index(self.group_id, inplace=True)
+
         # Loop through each window width
         for window_width in self.window_widths:
             # Loop through the columns to calculate MA
             for col in self.MA_cols:
                 col_name_ma = f"{col}_MA_{window_width}"
                 # Calculate the Moving Average within each group defined by 'CUST_NO' and store it in the result DataFrame
-                result_df[col_name_ma] = result_df.groupby([self.group_id])[col].rolling(window=window_width).mean().astype(np.float32)
+                result_df[col_name_ma] = result_df[col].rolling(window=window_width).mean().astype(np.float32)
 
                 if self.fill_method is not None:
-                    fill_generator = TS_data_fill(dataframe=result_df[col_name_ma], fill_method=self.fill_method, 
-                                                  constant_value=self.constant_value, limit=self.limit)
+                    fill_generator = TSDataFill(dataframe=result_df[col_name_ma], fill_method=self.fill_method)
                     result_df[col_name_ma] = fill_generator.fill()
 
+        # Reset index before returning the result
+        result_df.reset_index(inplace=True)
         return result_df
     
     def get_new_cols(self)-> list:
@@ -225,36 +225,3 @@ class DuplicateCheck:
 
         print("Duplicated rows has been removed!")
         return new_df
-
-class TS_data_fill:
-    def __init__(self, dataframe, fill_method=None, constant_value=None, limit=None)-> pd.DataFrame:
-        self.dataframe = dataframe
-        self.fill_method = fill_method
-        self.constant_value = constant_value
-        self.limit = limit
-
-
-    def bfill(self):
-        self.dataframe = self.dataframe.bfill(self.limit)
-        return self.dataframe
-
-    def ffill(self):
-        self.dataframe = self.dataframe.ffill(self.limit)
-        return self.dataframe
-
-    def constant_fill(self):
-        self.dataframe.fillna(self.constant_value, limit = self.limit ,inplace=True)
-        return self.dataframe
-
-
-    def fill(self):
-        if self.fill_method is None:
-            return self.dataframe
-        elif self.fill_method == 'bfill':
-            return self.bfill()
-        elif self.fill_method == 'ffill':
-            return self.ffill()
-        elif self.fill_method == 'constant' and self.constant_value is not None:
-            return self.constant_fill(self.constant_value)
-        else:
-            raise ValueError("Invalid fill method or missing constant value.")

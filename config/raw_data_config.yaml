@@ -28,3 +28,17 @@ DATA_PURPOSE:
       [
         'time',
       ]
+    ma_cols:
+      [
+      'close', 
+      'volume', 
+      ]
+    pct_cols:
+      [
+      'close', 
+      ]
+    lag_cols:
+      [
+      'close', 
+      'volume', 
+      ]
