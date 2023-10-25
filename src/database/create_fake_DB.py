@@ -1,5 +1,5 @@
 import sys
-sys.path.append('/root/code_Bao/Vietnamese_stocks_forecasting') 
+sys.path.append("")
 
 import pandas as pd
 import argparse
