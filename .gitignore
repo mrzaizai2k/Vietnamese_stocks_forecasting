@@ -9,3 +9,4 @@ venv/
 *.pyc
 *.pkl
 model/tft.pkl:Zone.Identifier
+notebook/lightning_logs/
