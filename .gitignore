@@ -7,3 +7,5 @@ data/
 lightning_logs/
 venv/
 *.pyc
+*.pkl
+model/tft.pkl:Zone.Identifier
